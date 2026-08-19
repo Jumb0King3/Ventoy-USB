@@ -1,18 +1,18 @@
-$ToolkitRoot = (Get-Item $PSScri*tRoot).PSDrive.Root
+$ToolkitRoot = (Get-Item $PSScriptRoot).PSDrive.Root
 
-$ReportFolder*= Join-Path $ToolkitRoot "Reports\*ntra"
+$ReportFolder = Join-Path $ToolkitRoot "Reports\Entra"
 
-if (-not (Test-Path $Report*older))
+if (-not (Test-Path $ReportFolder))
 {
-    New-Item -Path $Repo*tFolder -ItemType Directory -Force*| Out-Null
+    New-Item -Path $ReportFolder -ItemType Directory -Force | Out-Null
 }
 
-function Ensure-Grap*Module
+function Ensure-GraphModule
 {
-    if (-not (Get-Module *ListAvailable Microsoft.Graph))
-  * {
-        Write-Host "Microsoft G*aph module not found. Installing..*" -ForegroundColor Yellow
-        *nstall-Module Microsoft.Graph -Scope CurrentUser -Force
+    if (-not (Get-Module -ListAvailable Microsoft.Graph))
+    {
+        Write-Host "Microsoft Graph module not found. Installing..." -ForegroundColor Yellow
+        Install-Module Microsoft.Graph -Scope CurrentUser -Force
     }
 
     Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
@@ -41,15 +41,15 @@ function Convert-AuthMethodName
 
     switch -Wildcard ($ODataType)
     {
-        "*microsoftAuthenticatorAuthenticationMethod" { "Microsoft Authenticator" }
-        "*phoneAuthenticationMethod"                 { "Phone / SMS / Voice" }
-        "*fido2AuthenticationMethod"                 { "FIDO2 Security Key" }
-        "*windowsHelloForBusinessAuthenticationMethod" { "Windows Hello for Business" }
-        "*temporaryAccessPassAuthenticationMethod"   { "Temporary Access Pass" }
-        "*passwordAuthenticationMethod"              { "Password" }
-        "*emailAuthenticationMethod"                 { "Email" }
-        "*softwareOathAuthenticationMethod"          { "Software OATH Token" }
-        default                                      { $ODataType }
+        "*microsoftAuthenticatorAuthenticationMethod"      { "Microsoft Authenticator" }
+        "*phoneAuthenticationMethod"                       { "Phone / SMS / Voice" }
+        "*fido2AuthenticationMethod"                       { "FIDO2 Security Key" }
+        "*windowsHelloForBusinessAuthenticationMethod"     { "Windows Hello for Business" }
+        "*temporaryAccessPassAuthenticationMethod"         { "Temporary Access Pass" }
+        "*passwordAuthenticationMethod"                    { "Password" }
+        "*emailAuthenticationMethod"                       { "Email" }
+        "*softwareOathAuthenticationMethod"                { "Software OATH Token" }
+        default                                            { $ODataType }
     }
 }
 
