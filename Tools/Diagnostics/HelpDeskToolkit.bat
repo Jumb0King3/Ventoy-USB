@@ -1,17 +1,13 @@
 @echo off
 
-echo Current Folder:
-echo %~dp0
-echo.
-
 set USBROOT=%~dp0..\..
 
-echo USB Root:
-echo %USBROOT%
-echo.
+NET SESSION >nul 2>&1
 
-pause
+IF %ERRORLEVEL% NEQ 0 (
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
+    "Start-Process PowerShell -Verb RunAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File ""%USBROOT%\Scripts\Utilities\TechToolkit.ps1""'"
+    exit
+)
 
-PowerShell -NoProfile -ExecutionPolicy Bypass -File "%USBROOT%\Scripts\Utilities\TechToolkit.ps1"
-
-pause
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%USBROOT%\Scripts\Utilities\TechToolkit.ps1"
