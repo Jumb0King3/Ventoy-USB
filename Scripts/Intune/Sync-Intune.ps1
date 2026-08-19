@@ -16,24 +16,29 @@ Write-Host ""
 Write-Host "Attempting Intune sync..." -ForegroundColor Cyan
 Write-Host ""
 
-try
-{
-    Get-ScheduledTask |
-        Where-Object {
-            $_.TaskPath -like "*EnterpriseMgmt*"
-        } |
-        Start-ScheduledTask
+$Tasks = Get-ScheduledTask |
+    Where-Object {
+        $_.TaskPath -like "*EnterpriseMgmt*"
+    }
 
-    "Started EnterpriseMgmt scheduled tasks." |
-        Tee-Object -FilePath $ReportFile
-}
-catch
+foreach ($Task in $Tasks)
 {
-    $_.Exception.Message |
-        Tee-Object -FilePath $ReportFile
+    try
+    {
+        Start-ScheduledTask -InputObject $Task -ErrorAction Stop
+
+        "STARTED: $($Task.TaskName)" |
+            Tee-Object -FilePath $ReportFile -Append
+    }
+    catch
+    {
+        "SKIPPED: $($Task.TaskName) - $($_.Exception.Message)" |
+            Tee-Object -FilePath $ReportFile -Append
+    }
 }
 
-Start-Process "ms-settings:workplace"
+Write-Host ""
+Write-Host "Intune sync tasks processed." -ForegroundColor Green
 
 Write-Host ""
 Write-Host "Report saved to:" -ForegroundColor Green
