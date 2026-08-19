@@ -1,80 +1,82 @@
-$ToolkitRoot = (*et-Item $PSScriptRoot).PSDrive.Roo*
+$ToolkitRoot = (Get-Item $PSScriptRoot).PSDrive.Root
 
-$ReportFolder = Join-Path $Toolk*tRoot "Reports\Entra"
+$ReportFolder = Join-Path $ToolkitRoot "Reports\Entra"
 
-if (-not (T*st-Path $ReportFolder))
+if (-not (Test-Path $ReportFolder))
 {
-    New-*tem -Path $ReportFolder -ItemType *irectory -Force | Out-Null
+    New-Item -Path $ReportFolder -ItemType Directory -Force | Out-Null
 }
 
-func*ion Ensure-GraphModule
+function Ensure-GraphModule
 {
-    if (-*ot (Get-Module -ListAvailable Micr*soft.Graph))
+    if (-not (Get-Module -ListAvailable Microsoft.Graph))
     {
-        Write-H*st "Microsoft Graph module not fou*d. Installing..." -ForegroundColor*Yellow
-        Install-Module Micr*soft.Graph -Scope CurrentUser -For*e
+        Write-Host "Microsoft Graph module not found. Installing..." -ForegroundColor Yellow
+        Install-Module Microsoft.Graph -Scope CurrentUser -Force
     }
 
-    Import-Module Microso*t.Graph.Authentication -ErrorActio* Stop
-    Import-Module Microsoft.*raph.Identity.SignIns -ErrorAction*Stop
+    Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
+    Import-Module Microsoft.Graph.Identity.SignIns -ErrorAction Stop
 }
 
-function Connect-GraphIfNe*ded
+function Connect-GraphIfNeeded
 {
     param (
-        [string[*]$Scopes
+        [string[]]$Scopes
     )
 
-    $Context = Get*MgContext
+    $Context = Get-MgContext
 
     if (-not $Context)
-*   {
-        Connect-MgGraph -Scop*s $Scopes
+    {
+        Connect-MgGraph -Scopes $Scopes
     }
 }
 
-Ensure-GraphMod*le
-Connect-GraphIfNeeded -Scopes @*"UserAuthenticationMethod.Read.All*)
+Ensure-GraphModule
+Connect-GraphIfNeeded -Scopes @("UserAuthenticationMethod.Read.All")
 
-$UPN = Read-Host "Enter user UP*"
+$UPN = Read-Host "Enter user UPN"
 
 $SafeUPN = $UPN -replace '[\\/:*?"<>|]', '_'
-$ComputerName = $env:*OMPUTERNAME
-$TimeStamp = Get-Date *Format "yyyy-MM-dd_HH-mm-ss"
 
-$Rep*rtFile = Join-Path $ReportFolder "*ComputerName-TAPStatus-$SafeUPN-$T*meStamp.txt"
+$ComputerName = $env:COMPUTERNAME
+$TimeStamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+
+$ReportFile = Join-Path $ReportFolder "$ComputerName-TAPStatus-$SafeUPN-$TimeStamp.txt"
 
 try
 {
-    $TAP = Get*MgUserAuthenticationTemporaryAcces*PassMethod `
-        -UserId $UPN *
+    $TAP = Get-MgUserAuthenticationTemporaryAccessPassMethod `
+        -UserId $UPN `
         -ErrorAction Stop
 
-    if*($TAP)
+    if ($TAP)
     {
         $TAP |
-      *     Select-Object Id,
-           *              CreatedDateTime,
-   *                      StartDateTim*,
-                          Lifeti*eInMinutes,
-                      *   IsUsable,
-                     *    IsUsableOnce,
-                *         MethodUsabilityReason |
- *          Format-List |
-          * Tee-Object -FilePath $ReportFile
-*   }
+            Select-Object `
+                Id,
+                CreatedDateTime,
+                StartDateTime,
+                LifetimeInMinutes,
+                IsUsable,
+                IsUsableOnce,
+                MethodUsabilityReason |
+            Format-List |
+            Tee-Object -FilePath $ReportFile
+    }
     else
     {
-        "No Te*porary Access Pass found for $UPN.* |
-            Tee-Object -FilePat* $ReportFile
+        "No Temporary Access Pass found for $UPN." |
+            Tee-Object -FilePath $ReportFile
     }
 }
 catch
 {
-    "*AILED: $($_.Exception.Message)" |
-*       Tee-Object -FilePath $Repor*File
+    "FAILED: $($_.Exception.Message)" |
+        Tee-Object -FilePath $ReportFile
 }
 
 Write-Host ""
-Write-Host "*eport saved to:" -ForegroundColor *reen
-Write-Host $ReportFile -Foreg*oundColor Yellow
+Write-Host "Report saved to:" -ForegroundColor Green
+Write-Host $ReportFile -ForegroundColor Yellow
