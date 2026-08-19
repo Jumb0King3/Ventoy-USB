@@ -101,4 +101,4 @@ winget upgrade `
 Write-Host ""
 Write-Host "Upgrade completed." -ForegroundColor Green
 Write-Host "Report saved to:" -ForegroundColor Green
-Write-Host $ReportFile -ForegroundColor Yellow
+Write-Host $
