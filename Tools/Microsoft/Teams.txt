@@ -1,0 +1,21 @@
+1. Downloading New Teams
+
+Download New Teams from this URL onto the Machine: https://go.microsoft.com/fwlink/?linkid=2196106
+
+Save this to the Downloads folder.
+
+
+
+2. Updating the Registry
+
+Run the following in PowerShell:
+
+reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
+
+
+
+3. Install New Teams
+
+Run the following command in PowerShell to install New Teams:
+
+Add-AppxProvisionedPackage -online -packagepath "C:\Users\LocalAdmin\Downloads\MSTeams-x64.msix" -skiplicense
